@@ -42,7 +42,7 @@ impl diff::Diff for LockedTarball {
 #[async_trait::async_trait]
 impl Updatable for TarballPin {
     type Version = LockedTarball;
-    type Hashes = GenericHash;
+    type Hashes = NixHash;
 
     async fn update(&self, old: Option<&LockedTarball>) -> Result<LockedTarball> {
         const LINK: HeaderName = HeaderName::from_static("link");
@@ -89,9 +89,8 @@ impl Updatable for TarballPin {
         Ok(LockedTarball { locked_url })
     }
 
-    async fn fetch(&self, version: &LockedTarball) -> Result<GenericHash> {
+    async fn fetch(&self, version: &LockedTarball) -> Result<Self::Hashes> {
         let url = version.locked_url.as_ref().unwrap_or(&self.url);
-        let hash = nix::nix_prefetch_tarball(&url).await?;
-        Ok(GenericHash { hash })
+        nix::nix_prefetch_tarball(&url).await
     }
 }

@@ -49,14 +49,14 @@ impl diff::Diff for GitRevision {
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct OptionalUrlHashes {
     pub url: Option<url::Url>,
-    pub hash: String,
+    pub hash: NixHash,
 }
 
 impl diff::Diff for OptionalUrlHashes {
     fn properties(&self) -> Vec<(String, String)> {
         [
             self.url.as_ref().map(|url| ("url".into(), url.to_string())),
-            Some(("hash".into(), self.hash.clone())),
+            Some(("hash".into(), self.hash.to_string())),
         ]
         .into_iter()
         .flat_map(Option::into_iter)
@@ -69,14 +69,14 @@ pub struct ReleasePinHashes {
     pub revision: String,
     // This is the URL for the tarball to fetch, if absent use fetchgit instead
     pub url: Option<Url>,
-    pub hash: String,
+    pub hash: NixHash,
 }
 
 impl diff::Diff for ReleasePinHashes {
     fn properties(&self) -> Vec<(String, String)> {
         vec![
             ("revision".into(), self.revision.clone()),
-            ("hash".into(), self.hash.clone()),
+            ("hash".into(), self.hash.to_string()),
         ]
     }
 }
@@ -706,6 +706,8 @@ fn latest_release<'a>(
  */
 #[cfg(test)]
 mod test {
+    use nix_compat::nixhash;
+
     use super::*;
 
     #[tokio::test]
@@ -871,7 +873,8 @@ mod test {
             pin.fetch(&version).await?,
             OptionalUrlHashes {
                 url: None,
-                hash: "sha256-zUM/evAqAwwjGXg67IVzqZvvwp2NjFG1HAUSdLv98Z0=".into(),
+                hash: nixhash::from_sri_str("sha256-zUM/evAqAwwjGXg67IVzqZvvwp2NjFG1HAUSdLv98Z0=")
+                    .unwrap(),
             }
         );
         Ok(())
@@ -899,7 +902,8 @@ mod test {
             pin.fetch(&version).await?,
             ReleasePinHashes {
                 url: None,
-                hash: "sha256-BjxJ5aG8NyfDLcBNZrDVV2CAK4tdHNCBdiuJYKB8BmA=".into(),
+                hash: nixhash::from_sri_str("sha256-BjxJ5aG8NyfDLcBNZrDVV2CAK4tdHNCBdiuJYKB8BmA=")
+                    .unwrap(),
                 revision: "35be5b2b2c3431de1100996487d53134f658b866".into(),
             }
         );
@@ -927,7 +931,7 @@ mod test {
             pin.fetch(&version).await?,
             OptionalUrlHashes {
                 url: Some("https://github.com/oliverwatkins/swing_library/archive/1edb0a9cebe046cc915a218c57dbf7f40739aeee.tar.gz".parse().unwrap()),
-                hash: "sha256-zUM/evAqAwwjGXg67IVzqZvvwp2NjFG1HAUSdLv98Z0=".into(),
+                hash: nixhash::from_sri_str("sha256-zUM/evAqAwwjGXg67IVzqZvvwp2NjFG1HAUSdLv98Z0=").unwrap(),
             }
         );
         Ok(())
@@ -961,7 +965,8 @@ mod test {
                         .parse()
                         .unwrap()
                 ),
-                hash: "sha256-BjxJ5aG8NyfDLcBNZrDVV2CAK4tdHNCBdiuJYKB8BmA=".into(),
+                hash: nixhash::from_sri_str("sha256-BjxJ5aG8NyfDLcBNZrDVV2CAK4tdHNCBdiuJYKB8BmA=")
+                    .unwrap(),
             }
         );
         Ok(())
@@ -995,7 +1000,7 @@ mod test {
                         .parse()
                         .unwrap()
                 ),
-                hash: "sha256-++ywpuReqTb6tn8DddmLpOK4yOOTgX7M8X5YkJS8OCs=".into(),
+                hash: nixhash::from_sri_str("sha256-++ywpuReqTb6tn8DddmLpOK4yOOTgX7M8X5YkJS8OCs=").unwrap(),
             }
         );
         Ok(())
@@ -1023,7 +1028,7 @@ mod test {
             pin.fetch(&version).await?,
             OptionalUrlHashes {
                 url: Some("https://git.lix.systems/lix-project/lix/archive/4bbdb2f5564b9b42bcaf0e1eec28325300f31c72.tar.gz".parse().unwrap()),
-                hash: "sha256-w8JAk9Z3Fmkyway0VCjy/PtoBC6bGQVhNfTzFA98Pg8=".into(),
+                hash: nixhash::from_sri_str("sha256-w8JAk9Z3Fmkyway0VCjy/PtoBC6bGQVhNfTzFA98Pg8=").unwrap(),
             }
         );
         Ok(())
@@ -1058,7 +1063,8 @@ mod test {
                         .parse()
                         .unwrap()
                 ),
-                hash: "sha256-f8k+BezKdJfmE+k7zgBJiohtS3VkkriycdXYsKOm3sc=".into(),
+                hash: nixhash::from_sri_str("sha256-f8k+BezKdJfmE+k7zgBJiohtS3VkkriycdXYsKOm3sc=")
+                    .unwrap(),
             }
         );
         Ok(())
@@ -1086,7 +1092,7 @@ mod test {
             pin.fetch(&version).await?,
             OptionalUrlHashes {
                 url: Some("https://gitlab.com/api/v4/projects/maxigaz%2Fgitlab-dark/repository/archive.tar.gz?sha=e7145078163692697b843915a665d4f41139a65c".parse().unwrap()),
-                hash: "sha256-WzPqIwEe6HzISyeg1XBSHNO2fd9+Pc1T90RXBh7IrFo=".into(),
+                hash: nixhash::from_sri_str("sha256-WzPqIwEe6HzISyeg1XBSHNO2fd9+Pc1T90RXBh7IrFo=").unwrap(),
             }
         );
         Ok(())
@@ -1119,7 +1125,7 @@ mod test {
                 url: Some("https://gitlab.com/api/v4/projects/maxigaz%2Fgitlab-dark/repository/archive.tar.gz?ref=v1.16.0"
                     .parse()
                     .unwrap()),
-                hash: "sha256-WzPqIwEe6HzISyeg1XBSHNO2fd9+Pc1T90RXBh7IrFo=".into(),
+                hash: nixhash::from_sri_str("sha256-WzPqIwEe6HzISyeg1XBSHNO2fd9+Pc1T90RXBh7IrFo=").unwrap(),
             }
         );
         Ok(())
@@ -1147,7 +1153,7 @@ mod test {
             pin.fetch(&version).await?,
             OptionalUrlHashes {
                 url: Some("https://gitlab.gnome.org/api/v4/projects/Archive%2Fgnome-games/repository/archive.tar.gz?sha=bca2071b6923d45d9aabac27b3ea1e40f5fa3006".parse().unwrap()),
-                hash: "sha256-r84Y5/hI0rM/UWK569+nWo+BHuovmlQh3Zs6U2Srx14=".into(),
+                hash: nixhash::from_sri_str("sha256-r84Y5/hI0rM/UWK569+nWo+BHuovmlQh3Zs6U2Srx14=").unwrap(),
             }
         );
         Ok(())
@@ -1178,7 +1184,7 @@ mod test {
             ReleasePinHashes {
                 revision: "2c89145d52d072a4ca5da900c2676d890bfab1ff".into(),
                 url: Some("https://gitlab.gnome.org/api/v4/projects/Archive%2Fgnome-games/repository/archive.tar.gz?ref=40.0".parse().unwrap()),
-                hash: "sha256-r84Y5/hI0rM/UWK569+nWo+BHuovmlQh3Zs6U2Srx14=".into(),
+                hash: nixhash::from_sri_str("sha256-r84Y5/hI0rM/UWK569+nWo+BHuovmlQh3Zs6U2Srx14=").unwrap(),
             }
         );
         Ok(())

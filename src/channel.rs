@@ -2,6 +2,8 @@
 //!
 //! This should be preferred over pinning the equivaleng `nixpkgs` git branch.
 
+use nix_compat::nixhash::NixHash;
+
 use crate::*;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, Hash)]
@@ -34,12 +36,12 @@ impl diff::Diff for ChannelVersion {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct ChannelHash {
-    pub hash: String,
+    pub hash: NixHash,
 }
 
 impl diff::Diff for ChannelHash {
     fn properties(&self) -> Vec<(String, String)> {
-        vec![("hash".into(), self.hash.clone())]
+        vec![("hash".into(), self.hash.to_string())]
     }
 }
 
